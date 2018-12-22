@@ -2,50 +2,48 @@ import java.util.*;
 
 public class Main {
 	
-	static char[] arr;
-	static char[] in;
-	static List<List<String>> list;
+	Scanner sc;
 	
-	public static void genAll (int dex, int next) {
-		if (dex < 0) {
-			for (int i = 0; i < in.length; i++) {
-				genAll (dex + 1, i);
+	public void func () {
+		char[] arr = sc.nextLine ().toCharArray ();
+		BitSet bs = new BitSet (26 * 26 * 26);
+		short[] count = new short[26 * 26]; 
+		int i, j, k, index, countIndex, ctr = 0;
+		
+		for (i = 0; i < arr.length - 2; i++) {
+			for (j = i + 1; j < arr.length - 1; j++) {
+				countIndex = (arr[i] - 'A') * 26 + (arr[j] - 'A');
+				if (count[countIndex] >= 26) continue;
+				
+				for (k = j + 1; k < arr.length; k++) {
+					index = (arr[i] - 'A') * 26 * 26 + (arr[j] - 'A') * 26 + (arr[k] - 'A');
+					if (!bs.get (index)) {
+						bs.set (index);
+						ctr ++;
+						
+						count[countIndex] ++;
+						if (count[countIndex] >= 26) break;
+					}
+				}
 			}
-		} else {
-			arr[dex] = in[next];
-			if (dex == 2) {
-				String temp = new String (arr);
-				int pos = arr[0] - 'A';
-				if (!list.get (pos).contains(temp))
-					list.get (pos).add (temp);
-				return;
-			}
-			
-			for (int i = next + 1; i < in.length; i++) {
-				genAll (dex + 1, i);
-			}
+		}
+		
+		System.out.println (ctr);
+	}
+	
+	public void run () {
+		sc = new Scanner (System.in);
+		
+		int n = sc.nextInt ();
+		sc.nextLine ();
+		
+		while (n-->0) {
+			func ();
 		}
 	}
 	
 	public static void main (String[] args) {
-		Scanner sc = new Scanner (System.in);
-		
-		int n = sc.nextInt (); sc.nextLine ();
-		arr = new char[3];
-		list = new ArrayList<> (26);
-		for (int i = 0; i < 26; i++)
-			list.add (new ArrayList<> ());
-		
-		while (n-->0) {
-			in = sc.nextLine ().toCharArray ();
-			genAll (-1, 0);
-			int sum = 0;
-			for (int i = 0; i < 26; i++)
-				sum += list.get (i).size ();
-			System.out.println (sum);
-			for (int i = 0; i < 26; i++)
-				list.get(i).clear ();
-		}
+		new Main ().run ();
 	}
 	
 }

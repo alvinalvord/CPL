@@ -62,7 +62,7 @@ public class A {
 	}
 	
 	public Out closest (Point[] arr) {
-		if (arr.length <= 100) return brutex (arr);
+		if (arr.length <= 2) return brutex (arr);
 		
 		int n = arr.length / 2;
 		int m = arr.length - n;
