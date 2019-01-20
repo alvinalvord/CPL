@@ -2,65 +2,51 @@
 #include <stdlib.h>
 #include <string.h>
 
-typedef char string[1001];
+typedef char String[1002];
+
+int
+max (int a, int b, int c)
+{
+	int m = a;
+	if (b > m) m = b;
+	return m > c ? m : c;
+}
 
 int
 main ()
 {
-	int t;
+	int n, i, j, x;
+	String str;
+	int **arr = malloc (sizeof (int *) * 1001);
+	for (i = 0; i < 1001; i++)
+		arr[i] = malloc (sizeof (int) * 1001);
 	
-	scanf ("%d\n", &t);
+	scanf("%d", &n);
+	fgets (str, sizeof (str), stdin);
 	
-	while (t--) {
-		string in;
-		fgets (in, sizeof(in), stdin);
-		int len = strlen (in) - 1;
-		if (len == 0) {
-			printf ("0\n");
-			continue;
+	for (x = 0; x < n; x++) {
+		fgets (str, sizeof (str), stdin);
+		
+		int len = strlen (str);
+		
+		for (i = 0; i <= len; i++) {
+			arr[i][0] = arr[0][i] = 0;
 		}
 		
-		in[len] = 0;
-		int i, j, k = len - 1, max = 0;
-		
-		int **arr = malloc (sizeof (int *) * len);
-		for (i = 0; i < len; i++)
-			arr[i] = malloc (sizeof (int) * len);
-		
-		for (i = 0; i < len; i++) {
-			for (j = 0; j < len; j++) {
-				arr[i][j] = (in[i] == in[k - j]);
-				printf ("%d ", arr[i][j]);
-			}
-			printf ("\n");
-		}
-		
-		i = 0; j = 0;
-		int cur, x, y;
-		
-		for (i = 0; i < len; i++) {
-			for (j = 0; j < len; j++) {
-				if (arr[i][j]) {
-					x = i; y = j; cur = 0;
-					
-					while (x < len && y < len) {
-						if (arr[x][y]) {
-							cur++; x++; y++;
-						} else x++;
-					}
-					
-					if (cur > max)
-						max = cur;
-				}
+		for (i = 1; i <= len; i++) {
+			for (j = 1; j <= len; j++) {
+				arr[i][j] = max (
+					arr[i - 1][j - 1] + (str[i - 1] == str[len - j - 1]),
+					arr[i-1][j], 
+					arr[i][j-1]
+				);
 			}
 		}
-		
-		printf ("%d\n", max);
-		
-		for (i = 0; i < len; i++)
-			free (arr[i]);
-		free (arr);
+		printf ("%d\n", arr[len][len]);
 	}
 	
+	for (i = 0; i < 1001; i++)
+		free (arr[i]);
+	free (arr);
 	return 0;
 }
