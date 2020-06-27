@@ -1,68 +1,77 @@
 import java.util.*;
+import java.io.*;
 
 public class Main {
 	
-	Scanner sc;
-	List<Data> original;
-	List<Data> sorted;
+	BufferedReader br;
 	
 	class Data {
-		String str;
-		int index;
-		List<Data> matches;	
-		Map<Data, Integer> map;
+		String s;
+		byte[] skip;
 		
-		Data (String str, int index) {
-			this.str = str;
-			this.index = index;
-			matches = new ArrayList <> ();
-			map = new HashMap<> ();
-		}
-		
-		void append (Data d) {
-			map.put (d, matches.size ());
-			matches.add (d);
-		}
-		
-		void remove (Data d) {
-			int index = map.get (d);
-			Collections.swap (matches, index, matches.size () - 1);
-			map.remove (d);
-			map.put (matches.get (matches.size () - 1), index);
-			matches.remove (matches.size () - 1);
-		}
-	}
-	
-	public void run () {
-		sc = new Scanner (System.in);
-		int n = sc.nextInt (); sc.nextLine ();
-		original = new ArrayList <> (n);
-		sorted = new ArrayList <> (n);
-		
-		for (int i = 1; i <= n; i++) {
-			Data d = new Data (sc.nextLine (), i);
-			original.add (d);
-			sorted.add (d);
-		}
-		sorted.sort ((a,b) -> String.compare (a.str, b.str));
-		
-		for (int i = 0; i < sorted.size () - 1; i++) {
-			for (int j = i + 1; j < sorted.size (); j++) {
-				sorted.get (i).append (sorted.get (j));
+		Data (String s) {
+			this.s = s;
+			skip = new byte[s.length ()];
+			skip[skip.length - 1] = 1;
+			for (int i = skip.length - 2; i >= 0; i--) {
+				if (s.charAt (i) == s.charAt (i + 1))
+					skip[i] = (byte)(skip[i + 1] + 1);
+				else
+					skip[i] = 1;
 			}
 		}
 		
-		for (int i = 0; i < sorted.size () - 1; i++) {
-			boolean wild = true;
+		boolean match (Data d) {
+			for (int i = 0; i < s.length (); ) {
+				if (s.charAt (i) == '-') {
+					i += skip[i];
+				} else if (d.s.charAt (i) == '-') {
+					i += d.skip[i];
+				} else {
+					if (s.charAt (i) == d.s.charAt (i)) {
+						i += Math.min (skip[i], d.skip[i]);
+					} else {
+						return false;
+					}
+				}
+			}
 			
-			
+			return true;
 		}
-		
 		
 	}
 	
-	public static void main (String[] args) {
+	public void run () throws Exception {
+		br = new BufferedReader (new InputStreamReader (System.in));
+		int n = Integer.parseInt (br.readLine ());
+		Data[] data = new Data[n];
+		
+		for (int i = 0; i < n; i++) {
+			data[i] = new Data (br.readLine ());
+		}
+		
+		boolean flag;
+		StringBuilder sb = new StringBuilder ();
+		for (int i = 1; i < n; i++) {
+			flag = false;
+			for (int j = 0; j < i; j++) {
+				if (data[i].match (data[j])) {
+					if (!flag) sb.append (i + 1).append (":");
+					flag = true;
+					sb.append (" ").append (j + 1);
+				}
+			}
+			if (flag) sb.append ("\n");
+		}
+		
+		System.out.print (sb.toString ());
+	}
+	
+	public static void main (String[] args) throws Exception {
+		// long start = System.nanoTime ();
 		new Main ().run ();
+		// long end = System.nanoTime ();
+		// System.out.println ((end - start) / 1e9);
 	}
 	
 }

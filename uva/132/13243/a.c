@@ -1,161 +1,71 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <sys/time.h>
+#include <string.h>
 
-typedef char string6[6];
-typedef char string[101];
+typedef char String[101];
 
 typedef struct {
-	unsigned char v: 1;
-} bool;
+	String s;
+	char skip[100];
+} Data;
 
-char
-allwild (char *s)
+char 
+min (char a, char b) {
+	return (a < b) ? a : b;
+}
+
+int
+match (Data *a, Data *b, int len)
 {
-	while (*s) {
-		if (*s != '-')
-			return 0;
-		else s++;
+	int i;
+	for (i = 0; i < len; ) {
+		if (a->s[i] == '-') {
+			i += a->skip[i];
+		} else if (b->s[i] == '-') {
+			i += b->skip[i];
+		} else {
+			if (a->s[i] == b->s[i]) {
+				i += min (a->skip[i], b->skip[i]);
+			} else {
+				return 0;
+			}
+		}
 	}
-		
 	return 1;
 }
 
-int
-cat (char *a, char *b, int dex)
+int 
+main (int argc, char *argv[])
 {
-	a += dex;
+	int n, i, j, len, flag;
+	Data *data;
 	
-	while (*b) {
-		*a = *b;
-		a++; b++; dex++;
-	}
+	fscanf (stdin, "%d", &n);
+	data = malloc (sizeof (Data) * n);
 	
-	return dex;
-}
-
-char
-check (char *a, char *b)
-{
-	if (!(*a) && !(*b)) return 1;
+	for (i = 0; i < n; i++) scanf ("%s", data[i].s);
+	len = strlen (data[0].s);
 	
-	if (*a != '-' && *b != '-' && *a != *b) return 0;
-	
-	return check (a + 1, b + 1);
-}
-
-int
-itc (int n, char *a)
-{
-	if (n == 0)
-		return 0;
-	
-	int i = itc (n / 10, a);
-	a[i] = n % 10 + '0';
-	return i + 1;
-}
-
-void
-func ()
-{
-	int n, i, j;
-	
-	string6 numstring[20000];
-	
-	for (i = 0; i < 20000; i++) {
-		numstring[i][itc(i + 1, numstring[i])] = 0;
-	}
-	
-	scanf ("%d", &n);
-	
-	string *in = malloc (sizeof (string) *n);
-	bool wild[n];
-	bool hasMatch[n];
-	bool *match = malloc (sizeof (bool) * n * n);
-	
-	for (i = 0; i < n; i++) {
-		scanf ("%s", in[i]);
-		wild[i].v = 0;
-	}
-	
-	for (i = 0; i < n; i++) {
-		if (allwild (in[i]))
-			wild[i].v = 1;
-	}
-	
-	j = 0;
-	for (i = 1; i < n; j++) {
-		if (j < i) {
-			// if (wild[i].v || wild[j].v)
-				// match[i * n + j].v = 1;
-			// else
-				match[i * n + j].v = check (in[i], in[j]);
-		}
-		else {
-			i++; j = 0;
+	for (i = n - 1; i >= 0; i--) {
+		data[i].skip[len - 1] = 1;
+		for (j = len - 2; j >= 0; j--) {
+			data[i].skip[j] = (data[i].s[j] == data[i].s[j + 1]) ? 
+				data[i].skip[j + 1] + 1 : 1;
 		}
 	}
 	
 	for (i = 1; i < n; i++) {
-		hasMatch[i].v = 0;
-		for (j = 0; j < i && !hasMatch[i].v; j++)
-			hasMatch[i].v = match[i * n + j].v;
-	}
-	
-	int dex;
-	char *buff = malloc (sizeof (char) * 150000);
-	char wildflag;
-	for (i = 1; i < n; i++) {
-		if (hasMatch[i].v) {
-			if (wild[i].v && wildflag) {
-				buff[dex++] = ' ';
-				dex = cat (buff, numstring[i - 1], dex);
-				buff[dex] = 0;
-				printf ("%s:", numstring[i]);
-				printf ("%s\n", buff);
+		flag = 0;
+		for (j = 0; j < i; j++) {
+			if (match (data + i, data + j, len)) {
+				if (!flag) fprintf (stdout, "%d:", i + 1);
+				flag = 1;
+				fprintf (stdout, " %d", j + 1);
 			}
-			else {
-				dex = 0;
-				for (j = 0; j < i; j++) {
-					if (match[i * n + j].v) {
-						buff[dex++] = ' ';
-						dex = cat (buff, numstring[j], dex);
-					}
-				}
-				buff[dex] = 0;
-				printf ("%s:", numstring[i]);
-				printf ("%s\n", buff);
-			}
-			wildflag = wild[i].v;
 		}
+		if (flag) fprintf (stdout, "\n");
 	}
 	
-	free (buff);
-	free (in);
-	free (match);
-}
-
-void
-t ()
-{
-	struct timeval start, stop;
-	double secs = 0;
-
-	gettimeofday(&start, NULL);
-	
-	func ();
-	
-	gettimeofday(&stop, NULL);
-	secs = (double)(stop.tv_usec - start.tv_usec) / 1000000 + (double)(stop.tv_sec - start.tv_sec);
-	
-	FILE *fp = fopen ("time.txt", "w");
-	fprintf(fp,"\ntime taken %f\n",secs);
-	fclose (fp);
-}
-
-int
-main ()
-{
-	t ();
+	free (data);
 	return 0;
 }
